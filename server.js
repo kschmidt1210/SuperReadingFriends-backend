@@ -61,6 +61,38 @@ app.get('/api/players', async (req, res) => {
 
 async function getFriendsData() {
     try {
+        const auth = new JWT({
+            email: credentials.client_email,
+            key: credentials.private_key.replace(/\\n/g, '\n'),
+            scopes: ['https://www.googleapis.com/auth/spreadsheets']
+        });
+
+        const doc = new GoogleSpreadsheet(SPREADSHEET_ID, auth);
+        await doc.loadInfo();
+
+        const sheet = doc.sheetsByTitle['Friends'];
+        if (!sheet) {
+            throw new Error('Sheet with title "Friends" not found');
+        }
+
+        const rows = await sheet.getRows();
+        return rows.map(row => ({
+            name: row._rawData[0],
+            pages: row._rawData[1],
+            booksCounted: row._rawData[3],
+            booksCompleted: row._rawData[4],
+            totalPoints: row._rawData[13],
+        }));
+    } catch (error) {
+        console.error('❌ Google API Error:', error);
+        console.error('🔹 Error Details:', JSON.stringify(error, null, 2)); // Print full error details
+        return [];
+    }
+}
+
+/*
+async function getFriendsData() {
+    try {
         if (!credentials.client_email || !credentials.private_key) {
             console.error("❌ Missing Google Service Account credentials");
         } else {
@@ -109,6 +141,7 @@ async function getFriendsData() {
         return [];
     }
 }
+*/
 
 app.get('/api/friends', async (req, res) => {
     const data = await getFriendsData();
