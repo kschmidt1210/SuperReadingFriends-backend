@@ -4,7 +4,7 @@ const cors = require('cors');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library'); // ✅ Import JWT for authentication
 const creds = require('./google-service-account.json'); // Your Google API Credentials
-const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT || '{}');
 
 const app = express();
 app.use(cors());
@@ -14,6 +14,13 @@ const SPREADSHEET_ID = '1ZBYG_eq4VKdTuo9GGPQIsU4k9ipcXVQP7xPCbr15UU4'; // Replac
 
 async function getPlayersData() {
     try {
+
+        if (!credentials.client_email || !credentials.private_key) {
+            console.error("❌ Missing Google Service Account credentials");
+        } else {
+            console.log("✅ Google Service Account credentials loaded successfully");
+        }
+        
         const auth = new JWT({
             email: credentials.client_email,
             key: credentials.private_key.replace(/\\n/g, '\n'),
@@ -54,12 +61,17 @@ app.get('/api/players', async (req, res) => {
 
 async function getFriendsData() {
     try {
+        if (!credentials.client_email || !credentials.private_key) {
+            console.error("❌ Missing Google Service Account credentials");
+        } else {
+            console.log("✅ Google Service Account credentials loaded successfully");
+        }
+        
         const auth = new JWT({
             email: credentials.client_email,
             key: credentials.private_key.replace(/\\n/g, '\n'),
             scopes: ['https://www.googleapis.com/auth/spreadsheets']
         });
-
         const doc = new GoogleSpreadsheet(SPREADSHEET_ID, auth);
         await doc.loadInfo();
 
