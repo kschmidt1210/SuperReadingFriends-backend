@@ -4,18 +4,19 @@ const cors = require('cors');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library'); // ✅ Import JWT for authentication
 const creds = require('./google-service-account.json'); // Your Google API Credentials
+const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
 
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5001; // Render assigns a dynamic port
 const SPREADSHEET_ID = '1ZBYG_eq4VKdTuo9GGPQIsU4k9ipcXVQP7xPCbr15UU4'; // Replace with your actual Google Sheets ID
 
 async function getPlayersData() {
     try {
         const auth = new JWT({
-            email: creds.client_email,
-            key: creds.private_key.replace(/\\n/g, '\n'),
+            email: credentials.client_email,
+            key: credentials.private_key.replace(/\\n/g, '\n'),
             scopes: ['https://www.googleapis.com/auth/spreadsheets']
         });
 
@@ -54,8 +55,8 @@ app.get('/api/players', async (req, res) => {
 async function getFriendsData() {
     try {
         const auth = new JWT({
-            email: creds.client_email,
-            key: creds.private_key.replace(/\\n/g, '\n'),
+            email: credentials.client_email,
+            key: credentials.private_key.replace(/\\n/g, '\n'),
             scopes: ['https://www.googleapis.com/auth/spreadsheets']
         });
 
