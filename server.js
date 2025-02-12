@@ -12,6 +12,9 @@ if (!credentials.client_email || !credentials.private_key) {
     console.log("✅ Google Service Account credentials loaded successfully");
 }
 
+console.log("🔹 Checking Private Key Formatting:");
+console.log(credentials.private_key ? credentials.private_key.substring(0, 50) : "❌ No private key found");
+
 const auth = new JWT({
     email: credentials.client_email,
     key: credentials.private_key.replace(/\\n/g, '\n'), // Fixes key formatting
