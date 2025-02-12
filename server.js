@@ -23,6 +23,18 @@ app.get('/api/players', async (req, res) => {
     res.json({ players: data });
 });
 
+// ✅ Fetch Books Data from `logged_books`
+app.get('/api/books', async (req, res) => {
+    const { data, error } = await supabase.from('logged_books').select('*');
+
+    if (error) {
+        console.error('❌ Error fetching books:', error);
+        return res.status(500).json({ error: 'Failed to fetch books' });
+    }
+
+    res.json({ books: data });
+});
+
 /*
 // ✅ Fetch Friends Data
 app.get('/api/friends', async (req, res) => {
