@@ -52,32 +52,48 @@ app.get('/api/my-books', async (req, res) => {
 });
 
 app.get('/api/rankings', async (req, res) => {
-    const { data, error } = await supabase
-        .from('logged_books')
-        .select('player_name, points');
+    try {
+        console.log("🔹 Fetching rankings from Supabase...");
 
-    if (error || !data) {
-        console.error('❌ Error fetching rankings:', error || 'No data received');
-        return res.status(500).json({ error: 'Failed to fetch rankings' });
-    }
+        const { data, error } = await supabase
+            .from('logged_books')
+            .select('player_name, points');
 
-    // Ensure points are numbers and sum them by player
-    const rankings = data.reduce((acc, book) => {
-        const player = book.player_name;
-        const points = Number(book.points) || 0; // Convert points to a number (fallback to 0)
-
-        if (!acc[player]) {
-            acc[player] = { player_name: player, total_points: 0 };
+        if (error) {
+            console.error('❌ Supabase Query Error:', error);
+            return res.status(500).json({ error: 'Failed to fetch rankings from Supabase.' });
         }
-        acc[player].total_points += points;
 
-        return acc; // Return accumulator properly
-    }, {});
+        if (!data || data.length === 0) {
+            console.warn('⚠️ No data returned from Supabase.');
+            return res.status(404).json({ error: 'No ranking data found.' });
+        }
 
-    // Convert object to sorted array (highest to lowest points)
-    const sortedRankings = Object.values(rankings).sort((a, b) => b.total_points - a.total_points);
+        console.log("✅ Supabase Data Fetched:", data);
 
-    res.json({ rankings: sortedRankings });
+        // Ensure points are numbers and sum them by player
+        const rankings = data.reduce((acc, book) => {
+            const player = book.player_name;
+            const points = Number(book.points) || 0; // Convert points to a number (fallback to 0)
+
+            if (!acc[player]) {
+                acc[player] = { player_name: player, total_points: 0 };
+            }
+            acc[player].total_points += points;
+
+            return acc;
+        }, {});
+
+        // Convert object to sorted array (highest to lowest points)
+        const sortedRankings = Object.values(rankings).sort((a, b) => b.total_points - a.total_points);
+
+        console.log("✅ Sorted Rankings:", sortedRankings);
+
+        res.json({ rankings: sortedRankings });
+    } catch (err) {
+        console.error("❌ Unexpected Error in /api/rankings:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
 
 app.listen(PORT, () => {
