@@ -23,9 +23,27 @@ app.get('/api/players', async (req, res) => {
     res.json({ players: data });
 });
 
+/*
 // ✅ Fetch Books Data from `logged_books`
 app.get('/api/books', async (req, res) => {
-    const { data, error } = await supabase.from('logged_books').select('*');
+    const { data, error } = await supabase
+        .from('logged_books')
+        .select('*');
+    if (error) {
+        console.error('❌ Error fetching books:', error);
+        return res.status(500).json({ error: 'Failed to fetch books' });
+    }
+
+    res.json({ books: data });
+});
+*/
+
+// Mock data to only fetch books for Josh
+app.get('/api/books', async (req, res) => {
+    const { data, error } = await supabase
+        .from('logged_books')
+        .select('*')
+        .eq('player_name', 'Josh'); // Filter for player_name="Josh"
 
     if (error) {
         console.error('❌ Error fetching books:', error);
@@ -34,20 +52,6 @@ app.get('/api/books', async (req, res) => {
 
     res.json({ books: data });
 });
-
-/*
-// ✅ Fetch Friends Data
-app.get('/api/friends', async (req, res) => {
-    const { data, error } = await supabase.from('friends').select('*');
-
-    if (error) {
-        console.error('❌ Error fetching friends:', error);
-        return res.status(500).json({ error: 'Failed to fetch friends' });
-    }
-
-    res.json({ friends: data });
-});
-*/
 
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
