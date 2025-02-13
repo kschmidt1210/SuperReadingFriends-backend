@@ -23,7 +23,6 @@ app.get('/api/players', async (req, res) => {
     res.json({ players: data });
 });
 
-/*
 // ✅ Fetch Books Data from `logged_books`
 app.get('/api/books', async (req, res) => {
     const { data, error } = await supabase
@@ -36,10 +35,9 @@ app.get('/api/books', async (req, res) => {
 
     res.json({ books: data });
 });
-*/
 
 // Mock data to only fetch books for Josh
-app.get('/api/books', async (req, res) => {
+app.get('/api/my-books', async (req, res) => {
     const { data, error } = await supabase
         .from('logged_books')
         .select('*')
