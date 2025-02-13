@@ -56,19 +56,22 @@ app.get('/api/rankings', async (req, res) => {
         .from('logged_books')
         .select('player_name, points');
 
-    if (error) {
-        console.error('❌ Error fetching rankings:', error);
+    if (error || !data) {
+        console.error('❌ Error fetching rankings:', error || 'No data received');
         return res.status(500).json({ error: 'Failed to fetch rankings' });
     }
 
-    // Group by player_name and sum their points
+    // Ensure points are numbers and sum them by player
     const rankings = data.reduce((acc, book) => {
         const player = book.player_name;
+        const points = Number(book.points) || 0; // Convert points to a number (fallback to 0)
+
         if (!acc[player]) {
             acc[player] = { player_name: player, total_points: 0 };
         }
-        acc[player].total_points += book.points;
-        return acc;
+        acc[player].total_points += points;
+
+        return acc; // Return accumulator properly
     }, {});
 
     // Convert object to sorted array (highest to lowest points)
