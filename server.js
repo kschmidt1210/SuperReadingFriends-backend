@@ -51,6 +51,32 @@ app.get('/api/my-books', async (req, res) => {
     res.json({ books: data });
 });
 
+app.get('/api/rankings', async (req, res) => {
+    const { data, error } = await supabase
+        .from('logged_books')
+        .select('player_name, points');
+
+    if (error) {
+        console.error('❌ Error fetching rankings:', error);
+        return res.status(500).json({ error: 'Failed to fetch rankings' });
+    }
+
+    // Group by player_name and sum their points
+    const rankings = data.reduce((acc, book) => {
+        const player = book.player_name;
+        if (!acc[player]) {
+            acc[player] = { player_name: player, total_points: 0 };
+        }
+        acc[player].total_points += book.points;
+        return acc;
+    }, {});
+
+    // Convert object to sorted array (highest to lowest points)
+    const sortedRankings = Object.values(rankings).sort((a, b) => b.total_points - a.total_points);
+
+    res.json({ rankings: sortedRankings });
+});
+
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
 });
