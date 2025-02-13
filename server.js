@@ -82,3 +82,20 @@ app.get('/api/rankings', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
 });
+
+app.post("/api/submit-book", async (req, res) => {
+    const { player_name, title, pages, year_published, completed, genre, rating, points } = req.body;
+
+    const { data, error } = await supabase
+        .from("logged_books")
+        .insert([
+            { player_name, title, pages, year_published, completed, genre, rating, points }
+        ]);
+
+    if (error) {
+        console.error("❌ Error logging book:", error);
+        return res.status(500).json({ error: "Failed to log book" });
+    }
+
+    res.status(201).json({ message: "Book submitted successfully", book: data });
+});
