@@ -5,6 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
+app.use(express.json()); // ✅ Needed for JSON parsing
 
 const PORT = process.env.PORT || 5001;
 
@@ -23,11 +24,10 @@ app.get('/api/players', async (req, res) => {
     res.json({ players: data });
 });
 
-// ✅ Fetch Books Data from `logged_books`
+// ✅ Fetch Books Data (ALL Books - For Admin Use)
 app.get('/api/books', async (req, res) => {
-    const { data, error } = await supabase
-        .from('logged_books')
-        .select('*');
+    const { data, error } = await supabase.from('logged_books').select('*');
+
     if (error) {
         console.error('❌ Error fetching books:', error);
         return res.status(500).json({ error: 'Failed to fetch books' });
@@ -36,21 +36,28 @@ app.get('/api/books', async (req, res) => {
     res.json({ books: data });
 });
 
-// Mock data to only fetch books for Josh
+// ✅ Fetch Books for the Logged-In User
 app.get('/api/my-books', async (req, res) => {
+    const { player_id } = req.query; // 👈 Get `player_id` from the frontend request
+
+    if (!player_id) {
+        return res.status(400).json({ error: "Player ID is required" });
+    }
+
     const { data, error } = await supabase
         .from('logged_books')
         .select('*')
-        .eq('player_name', 'Josh'); // Filter for player_name="Josh"
+        .eq('player_id', player_id); // ✅ Filter by player_id, NOT player_name
 
     if (error) {
-        console.error('❌ Error fetching books:', error);
+        console.error('❌ Error fetching user books:', error);
         return res.status(500).json({ error: 'Failed to fetch books' });
     }
 
     res.json({ books: data });
 });
 
+// ✅ Fetch Player Rankings
 app.get('/api/rankings', async (req, res) => {
     try {
         console.log("🔹 Fetching player rankings from Supabase...");
@@ -79,18 +86,17 @@ app.get('/api/rankings', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-});
-
+// ✅ Submit a New Book (Now Uses player_id)
 app.post("/api/submit-book", async (req, res) => {
-    const { player_name, title, pages, year_published, completed, genre, rating, points } = req.body;
+    const { player_id, title, pages, year_published, completed, genre, rating, points } = req.body;
+
+    if (!player_id) {
+        return res.status(400).json({ error: "Player ID is required to log a book" });
+    }
 
     const { data, error } = await supabase
         .from("logged_books")
-        .insert([
-            { player_name, title, pages, year_published, completed, genre, rating, points }
-        ]);
+        .insert([{ player_id, title, pages, year_published, completed, genre, rating, points }]);
 
     if (error) {
         console.error("❌ Error logging book:", error);
@@ -98,4 +104,9 @@ app.post("/api/submit-book", async (req, res) => {
     }
 
     res.status(201).json({ message: "Book submitted successfully", book: data });
+});
+
+// ✅ Start Server
+app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
 });
