@@ -106,6 +106,30 @@ app.post("/api/submit-book", async (req, res) => {
     res.status(201).json({ message: "Book submitted successfully", book: data });
 });
 
+app.get("/api/player-books", async (req, res) => {
+    const { player_name } = req.query;
+
+    if (!player_name) {
+        return res.status(400).json({ error: "Player name is required" });
+    }
+
+    const { data, error } = await supabase
+        .from("logged_books")
+        .select("*")
+        .eq("player_name", player_name);
+
+    if (error) {
+        console.error("❌ Error fetching books for player:", error);
+        return res.status(500).json({ error: "Failed to fetch books" });
+    }
+
+    if (!data || data.length === 0) {
+        return res.status(404).json({ error: "No books found for this player." });
+    }
+
+    res.json({ books: data });
+});
+
 // ✅ Start Server
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
