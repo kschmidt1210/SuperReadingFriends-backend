@@ -130,7 +130,7 @@ app.get("/api/player-books", async (req, res) => {
     res.json({ books: data });
 });
 
-app.post('/api/calculate-points', async (req, res) => {
+/*app.post('/api/calculate-points', async (req, res) => {
     console.log("📥 Incoming Request Headers:", req.headers);
     console.log("📥 Incoming Request Body:", req.body); // Log incoming data
 
@@ -144,7 +144,7 @@ app.post('/api/calculate-points', async (req, res) => {
         }
 
         // Call the Supabase function
-        const { data, error } = await supabase.rpc('calculate_points', {
+        const { data, error } = await supabase.rpc("calculate_points", { 
             pages,
             year_published,
             completed,
@@ -156,6 +156,17 @@ app.post('/api/calculate-points', async (req, res) => {
             bonus_3,
             deductions
         });
+        
+        if (error) {
+            console.error("❌ Supabase error:", error);
+            return res.status(500).json({ error: error.message });
+        }
+        
+        // Ensure we only return the final calculated points
+        const finalPoints = data[0]?.final_points ?? 0; // Extract the final_points field
+        console.log("✅ Final calculated points:", finalPoints);
+        
+        res.json({ points: finalPoints });
 
         console.log("📤 Supabase Response:", data, error); // Log response
 
@@ -172,7 +183,7 @@ app.post('/api/calculate-points', async (req, res) => {
         res.status(500).json({ error: "Internal server error." });
     }
 });
-
+*/
 // ✅ Start Server
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
