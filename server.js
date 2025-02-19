@@ -131,15 +131,15 @@ app.get("/api/player-books", async (req, res) => {
 });
 
 app.post('/api/calculate-points', async (req, res) => {
+    console.log("📥 Incoming Request Headers:", req.headers);
+    console.log("📥 Incoming Request Body:", req.body); // Log incoming data
+
     try {
-        console.log("📥 Received request to calculate points:", req.body); // ✅ Log incoming data
-        
         const { pages, year_published, completed, fiction_nonfiction, female_author, 
                 hometown_bonus, bonus_1, bonus_2, bonus_3, deductions } = req.body;
 
-        // Ensure required fields are present
         if (typeof pages !== "number") {
-            console.error("❌ Missing or incorrect fields:", req.body);
+            console.error("❌ Invalid request data received:", req.body);
             return res.status(400).json({ error: "Invalid request. Ensure all required fields are provided and are the correct data types." });
         }
 
@@ -157,7 +157,7 @@ app.post('/api/calculate-points', async (req, res) => {
             deductions
         });
 
-        console.log("📤 Supabase response:", data, error); // Log response
+        console.log("📤 Supabase Response:", data, error); // Log response
 
         if (error) {
             console.error("❌ Supabase error:", error);
