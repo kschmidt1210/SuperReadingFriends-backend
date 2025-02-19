@@ -131,32 +131,43 @@ app.get("/api/player-books", async (req, res) => {
 });
 
 app.post('/api/calculate-points', async (req, res) => {
-    const { pages, year_published, completed, fiction_nonfiction, female_author, hometown_bonus, bonus_1, bonus_2, bonus_3, deductions } = req.body;
-
     try {
-        const { data, error } = await supabase
-            .rpc('calculate_points', {
-                pages,
-                year_published,
-                completed,
-                fiction_nonfiction,
-                female_author,
-                hometown_bonus,
-                bonus_1,
-                bonus_2,
-                bonus_3,
-                deductions
-            });
+        console.log("📥 Received request to calculate points:", req.body); // ✅ Log incoming data
+        
+        const { pages, year_published, completed, fiction_nonfiction, female_author, 
+                hometown_bonus, bonus_1, bonus_2, bonus_3, deductions } = req.body;
 
-        if (error) {
-            console.error('❌ Error calculating points:', error);
-            return res.status(500).json({ error: 'Failed to calculate points' });
+        // Ensure required fields are present
+        if (typeof pages !== "number" || typeof year_published !== "number") {
+            console.error("❌ Missing or incorrect fields:", req.body);
+            return res.status(400).json({ error: "Invalid request. Ensure all required fields are provided and are the correct data types." });
         }
 
-        res.json({ points: data[0].final_points }); // Send calculated points to frontend
+        // Call the Supabase function
+        const { data, error } = await supabase.rpc('debug_calculate_points', {
+            pages,
+            year_published,
+            completed,
+            fiction_nonfiction,
+            female_author,
+            hometown_bonus,
+            bonus_1,
+            bonus_2,
+            bonus_3,
+            deductions
+        });
+
+        if (error) {
+            console.error("❌ Supabase error:", error);
+            return res.status(500).json({ error: error.message });
+        }
+
+        console.log("✅ Points Calculation Result:", data);
+        res.json({ points: data.final_points });
+
     } catch (err) {
-        console.error('❌ Server error:', err);
-        res.status(500).json({ error: 'Server error' });
+        console.error("❌ Internal Server Error:", err);
+        res.status(500).json({ error: "Internal server error." });
     }
 });
 
