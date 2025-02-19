@@ -135,7 +135,7 @@ app.post('/api/calculate-points', async (req, res) => {
 
     try {
         const { data, error } = await supabase
-            .rpc('debug_calculate_points', {
+            .rpc('calculate_points', {
                 pages,
                 year_published,
                 completed,
