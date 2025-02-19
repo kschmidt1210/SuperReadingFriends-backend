@@ -130,7 +130,8 @@ app.get("/api/player-books", async (req, res) => {
     res.json({ books: data });
 });
 
-/*app.post('/api/calculate-points', async (req, res) => {
+/*
+app.post('/api/calculate-points', async (req, res) => {
     console.log("📥 Incoming Request Headers:", req.headers);
     console.log("📥 Incoming Request Body:", req.body); // Log incoming data
 
@@ -184,6 +185,7 @@ app.get("/api/player-books", async (req, res) => {
     }
 });
 */
+
 // ✅ Start Server
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
