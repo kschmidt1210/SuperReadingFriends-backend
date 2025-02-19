@@ -138,7 +138,7 @@ app.post('/api/calculate-points', async (req, res) => {
                 hometown_bonus, bonus_1, bonus_2, bonus_3, deductions } = req.body;
 
         // Ensure required fields are present
-        if (typeof pages !== "number" || typeof year_published !== "number") {
+        if (typeof pages !== "number") {
             console.error("❌ Missing or incorrect fields:", req.body);
             return res.status(400).json({ error: "Invalid request. Ensure all required fields are provided and are the correct data types." });
         }
@@ -156,6 +156,8 @@ app.post('/api/calculate-points', async (req, res) => {
             bonus_3,
             deductions
         });
+
+        console.log("📤 Supabase response:", data, error); // Log response
 
         if (error) {
             console.error("❌ Supabase error:", error);
