@@ -130,61 +130,41 @@ app.get("/api/player-books", async (req, res) => {
     res.json({ books: data });
 });
 
-/*
-app.post('/api/calculate-points', async (req, res) => {
-    console.log("📥 Incoming Request Headers:", req.headers);
-    console.log("📥 Incoming Request Body:", req.body); // Log incoming data
+app.put("/api/update-book/:bookId", async (req, res) => {
+    const { bookId } = req.params;
+    const { currentUserId, updatedBookData } = req.body;
 
-    try {
-        const { pages, year_published, completed, fiction_nonfiction, female_author, 
-                hometown_bonus, bonus_1, bonus_2, bonus_3, deductions } = req.body;
-
-        if (typeof pages !== "number") {
-            console.error("❌ Invalid request data received:", req.body);
-            return res.status(400).json({ error: "Invalid request. Ensure all required fields are provided and are the correct data types." });
-        }
-
-        // Call the Supabase function
-        const { data, error } = await supabase.rpc("calculate_points", { 
-            pages,
-            year_published,
-            completed,
-            fiction_nonfiction,
-            female_author,
-            hometown_bonus,
-            bonus_1,
-            bonus_2,
-            bonus_3,
-            deductions
-        });
-        
-        if (error) {
-            console.error("❌ Supabase error:", error);
-            return res.status(500).json({ error: error.message });
-        }
-        
-        // Ensure we only return the final calculated points
-        const finalPoints = data[0]?.final_points ?? 0; // Extract the final_points field
-        console.log("✅ Final calculated points:", finalPoints);
-        
-        res.json({ points: finalPoints });
-
-        console.log("📤 Supabase Response:", data, error); // Log response
-
-        if (error) {
-            console.error("❌ Supabase error:", error);
-            return res.status(500).json({ error: error.message });
-        }
-
-        console.log("✅ Points Calculation Result:", data);
-        res.json({ points: data.final_points });
-
-    } catch (err) {
-        console.error("❌ Internal Server Error:", err);
-        res.status(500).json({ error: "Internal server error." });
+    if (!currentUserId) {
+        return res.status(401).json({ error: "Unauthorized. User not logged in." });
     }
+
+    // Check if the book exists and belongs to the logged-in user
+    const { data: book, error: bookError } = await supabase
+        .from("logged_books")
+        .select("player_id")
+        .eq("id", bookId)
+        .single();
+
+    if (bookError || !book) {
+        return res.status(404).json({ error: "Book not found." });
+    }
+
+    if (book.player_id !== currentUserId) {
+        return res.status(403).json({ error: "You can only edit books you've submitted." });
+    }
+
+    // Update book entry in Supabase
+    const { error } = await supabase
+        .from("logged_books")
+        .update(updatedBookData)
+        .eq("id", bookId);
+
+    if (error) {
+        return res.status(500).json({ error: "Failed to update book." });
+    }
+
+    res.json({ message: "Book updated successfully!" });
 });
-*/
 
 // ✅ Start Server
 app.listen(PORT, () => {
